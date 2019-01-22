@@ -1,0 +1,25 @@
+{
+  "name": "koa2",
+  "version": "0.0.1",
+  "description": "koa2",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node app/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "koa2",
+    "mysql"
+  ],
+  "author": "carlos",
+  "license": "ISC",
+  "dependencies": {
+    "jsonwebtoken": "^8.4.0",
+    "koa": "^2.6.2",
+    "koa-body": "^4.0.6",
+    "koa-bodyparser": "^4.2.1",
+    "koa-jwt": "^3.5.1",
+    "koa-router": "^7.4.0",
+    "mysql": "^2.16.0"
+  }
+}
