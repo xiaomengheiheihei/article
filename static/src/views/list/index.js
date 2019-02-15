@@ -60,6 +60,9 @@ export default class List extends Component {
         currentTitle: '添加文章',
         uploadProps: {
             name: 'file',
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            },
             action: '/article/upload',
             onChange(info) {
                 console.log(info)

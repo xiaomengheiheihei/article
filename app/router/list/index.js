@@ -23,7 +23,7 @@ router.get('/article/getList', async(ctx, next) => {
 router.post('/article/upload', async (ctx, next) => {
     try {
         console.log(ctx)
-        console.log(ctx.request.body)
+        console.log(ctx.request.body.files)
         ctx.body = commonRes.error_01;
     } catch (error) {
         ctx.body = commonRes.error_01;
