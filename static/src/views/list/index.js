@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import './index.scss';
 import http from '../../http/http';
-import { Table, Button, message, Modal, Upload, Input } from 'antd';
+import { Table, Button, message, Modal, Input, Select } from 'antd';
+import Editor from 'for-editor'
+
+const Option = Select.Option;
+const { TextArea } = Input;
 
 export default class List extends Component {
     state = {
@@ -48,29 +52,40 @@ export default class List extends Component {
                 width: 200,
                 render: (text, record, index) => (
                     <span className="list-btn-wrap">
-                        <Button shape="circle" icon="edit" onClick={(record) => this.editArticle(record)} title="编辑" type="primary"></Button>
-                        <Button style={{margin: '0 15px'}} shape="circle" icon="delete" type="danger"></Button>
+                        <Button shape="circle" icon="edit" onClick={this.editArticle.bind(this, record)} title="编辑" type="primary"></Button>
+                        <Button style={{margin: '0 15px'}} onClick={this.deleteItem.bind(this, record)} shape="circle" icon="delete" type="danger"></Button>
                         <Button shape="circle" icon="snippets" type="primary"></Button>
                     </span>
                 )
             }
         ],
         listData: [],
+        value: '',
         visible: false,
         currentTitle: '添加文章',
-        uploadProps: {
-            name: 'file',
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            },
-            action: '/article/upload',
-            onChange(info) {
-                console.log(info)
-            }
+        currentItem: null,
+        infos: {
+            articleTitle: '',
+            keyword: '',
+            des: '',
+            type: '',
+            value: '',
         },
-        articleTitle: '',
+        typeList: [
+            {
+                id: 1,
+                value: '技术'
+            },
+            {
+                id: 2,
+                value: '随笔'
+            }
+        ]
     }
     componentDidMount () {
+        this.getList();
+    }
+    getList () {
         http.get(`/article/getList`, {})
         .then(res => {
             if (res.success === 1) {
@@ -83,22 +98,93 @@ export default class List extends Component {
             message.error(`获取数据失败，请稍后重试！`);
         })
     }
-    uploadArticle = () => {
-
+    handleChange(value) {
+        this.setState(state => state.infos.value = value)
+    }
+    addTitle (e) {
+        const value = e.target.value;
+        this.setState((state) => state.infos.articleTitle = value)
+    }
+    addDes (e) {
+        const value = e.target.value;
+        this.setState((state) => state.infos.des = value)
+    }
+    deleteItem (item) {
+        http.delete(`/article/delete`, {id: item.articleId})
+        .then(res => {
+            if (res.success === 1) {
+                message.success('删除成功！');
+                this.getList();
+            } else {
+                message.error(res.message.message);
+            }
+        })
+        .catch(error => {
+            message.error(`删除失败，请重试！`);
+        })
+    }
+    changeType (value) {
+        let type = '';
+        for (let i of this.state.typeList) {
+            if (i.id === value) {
+                type = i.value;
+            }
+        }
+        this.setState((state) => state.infos.type = type)
+    }
+    changeGjz (e) {
+        const value = e.target.value;
+        this.setState((state) => state.infos.keyword = value)
     }
     addArticle = () => {
         this.setState({visible: true, currentTitle: '添加文章'});
     }
-    editArticle = () => {
-        this.setState({visible: true, currentTitle: '编辑文章'});
+    editArticle = (item) => {
+        this.setState(state => {
+            state.infos.articleTitle = item.title;
+            state.infos.type = item.classification;
+            state.infos.keyword = item.keyWord;
+            state.infos.des = item.description;
+            state.infos.value = item.content;
+            return state.infos;
+        })
+        this.setState({visible: true, currentTitle: '编辑文章', currentItem: item});
     }
     handleCancel = () => {
         this.setState({visible: false});
     }
     handleOk = () => {
-        
+        if (this.state.currentTitle === '编辑文章') {
+            let params = {...this.state.infos};
+            params.id = this.state.currentItem.articleId;
+            http.put('/article/update', params)
+            .then(res => {
+                if (res.success === 1) {
+                    this.getList();
+                    message.success('修改成功！');
+                }
+            })
+            .catch(error => {
+                message.error('修改失败，请稍后重试！');
+            })
+        } else {
+            http.post('/article/add', this.state.infos)
+            .then(res => {
+                if (res.success === 1) {
+                    message.success('添加成功！');
+                    this.getList();
+                } else {
+                    message.error(res.message.message);
+                }
+            })
+            .catch(error => {
+                message.error(error.message.message);
+            })
+        }
+        this.handleCancel();
     }
     render () {
+        const { value } = this.state.infos
         return (
             <div className="article-list-wrap">
                 <div className="article-list-top">
@@ -114,16 +200,53 @@ export default class List extends Component {
                     visible={this.state.visible}
                     okText="保存"
                     cancelText="取消"
+                    width="80%"
                     getContainer={() => document.querySelector('.article-list-wrap')}
                     onOk={this.handleOk}
                     onCancel={this.handleCancel}
                     >
-                    <Upload className="upload-wrap" {...this.state.uploadProps}>
-                        <Button type="primary" icon="upload" onClick={this.uploadArticle}>
-                            Upload
-                        </Button>
-                    </Upload>
-                    <Input className="input-title" value={this.state.articleTitle} placeholder="请输入文章标题" />
+                    <div className="form-box">
+                        <div className="item">
+                            <label>标题:</label>
+                            <Input 
+                                className="input-title" 
+                                value={this.state.infos.articleTitle} 
+                                placeholder="请输入文章标题" 
+                                onChange={this.addTitle.bind(this)}
+                            />
+                        </div>
+                        <div className="item">
+                            <label>分类:</label>
+                            <Select value={this.state.infos.type} style={{ width: 250 }} onChange={this.changeType.bind(this)}>
+                                {
+                                    this.state.typeList.map((item, index) => (
+                                        <Option key={item.id} value={item.id}>{item.value}</Option>
+                                    ))
+                                }
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="form-box">
+                        <div className="item">
+                            <label>关键:</label>
+                            <Input 
+                                style={{ width: 250 }} 
+                                onChange={this.changeGjz.bind(this)}
+                                value={this.state.infos.keyword} 
+                                placeholder="添加关键字(以逗号分隔)" 
+                            />
+                        </div>
+                        <div className="item">
+                            <label>描述:</label>
+                            <TextArea 
+                                rows={4} 
+                                onChange={this.addDes.bind(this)}
+                                value={this.state.infos.des} 
+                                style={{width: 250, verticalAlign: 'top'}} 
+                            />
+                        </div>
+                    </div>
+                    <Editor value={value} onChange={this.handleChange.bind(this)} />
                 </Modal>
             </div>
         )

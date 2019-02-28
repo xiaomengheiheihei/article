@@ -9,12 +9,24 @@
     .ant-pagination {
         padding-right: 20px;
     }
-    .upload-wrap {
-        display: inline-block;
-    }
-    .input-title {
-        vertical-align: top;
-        max-width: 300px;
-        margin-left: 30px;
+    .form-box {
+        overflow: hidden;
+        .item {
+            margin-bottom: 20px;
+            display: inline-block;
+            width: 50%;
+            vertical-align: top;
+            label {
+                font-size: 16px;
+                color: #333;
+                font-weight: 400;
+                vertical-align: top;
+                margin-right: 15px;
+            }
+            .input-title {
+                vertical-align: middle;
+                max-width: 250px;
+            }
+        }
     }
 }
