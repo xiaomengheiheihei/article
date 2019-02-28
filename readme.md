@@ -1,1 +1,3 @@
-koa2 + mysql + react 
+> koa2 + mysql + react 
+### 个人博客系统
+> 包涵服务端、后台编写新建、修改、删除、文章等功能
