@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './index.scss';
 import http from '../../http/http';
+import { transferTime } from '../../unitl/util';
 import { Table, Button, message, Modal, Input, Select } from 'antd';
 import Editor from 'for-editor'
 
@@ -42,7 +43,7 @@ export default class List extends Component {
                 title: '创建时间',
                 dataIndex: 'createTime',
                 key: 'createTime',
-                render: (record) => (<span>{record}</span>)
+                render: (record) => (<span>{transferTime(record)}</span>)
             },
             {
                 title: '操作',
