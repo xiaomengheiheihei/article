@@ -1,6 +1,7 @@
 const router = require('koa-router')();
 const db = require('../../db');
 const commonRes = require('../../utils/commonRes');
+const getParams = require('../../utils/util').getParams;
 const getArticleList = require('../../utils/util').getArticleList;
 const uploadArticle = require('../../utils/util').uploadArticle;
 const deleteArticle = require('../../utils/util').deleteArticle;
@@ -11,8 +12,16 @@ const updateArticle = require('../../utils/util').updateArticle;
  */ 
 router.get('/article/getList', async(ctx, next) => {
     try {
-        let result = await getArticleList();
-        commonRes.success.data = result;
+        let obj = {
+            total: 0,
+            data: [],
+            pageSize: Number(getParams(ctx.request.url, 'pageSize')),
+            currentPage: Number(getParams(ctx.request.url, 'currentPage')),
+        }
+        let result = await getArticleList(obj);
+        obj.total = Math.ceil(result.length /  getParams(ctx.request.url, 'pageSize'));
+        obj.data = result;
+        commonRes.success.data = obj;
         commonRes.success.message.message = `获取数据成功！`;
         ctx.body = commonRes.success;
     } catch (error) {

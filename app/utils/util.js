@@ -1,6 +1,14 @@
 const db = require('../db');
 module.exports = {
     /**
+     * 获取url参数
+     */ 
+    getParams: (url, target) => {
+        let reg = new RegExp("(^|&)" + target + "=([^&]*)(&|$)", "i");
+        let r = url.split('?')[1].match(reg);
+        if (r != null) return unescape(r[2]); return null;
+    },
+    /**
      * 根据用户名&&密码查询用户
      */ 
     getOneByUserNameAndPassword: async (options) => {
@@ -29,7 +37,7 @@ module.exports = {
      * 获取文章列表
      */ 
     getArticleList: async (query) => {
-        let _sql = `select * from article limit 0, 1000`;
+        let _sql = `select * from article limit ${(query.currentPage - 1) * query.pageSize}, ${query.pageSize}`;
         let result = await db.query(_sql);
         return result;
     },

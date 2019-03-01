@@ -33,6 +33,7 @@ export default class List extends Component {
                 title: '分类',
                 dataIndex: 'classification',
                 key: 'classification',
+                width: 100,
             },
             {
                 title: '关键字',
@@ -60,6 +61,11 @@ export default class List extends Component {
                 )
             }
         ],
+        page: {
+            pageSize: 10,
+            currentPage: 1,
+            total: 0,
+        },
         listData: [],
         value: '',
         visible: false,
@@ -87,10 +93,10 @@ export default class List extends Component {
         this.getList();
     }
     getList () {
-        http.get(`/article/getList`, {})
+        http.get(`/article/getList`, {currentPage: this.state.page.currentPage, pageSize: this.state.page.pageSize})
         .then(res => {
             if (res.success === 1) {
-                this.setState({listData: res.data});
+                this.setState({listData: res.data.data});
             } else {
                 message.error(res.message.message);
             }
@@ -152,7 +158,17 @@ export default class List extends Component {
         this.setState({visible: true, currentTitle: '编辑文章', currentItem: item});
     }
     handleCancel = () => {
-        this.setState({visible: false});
+        let obj = {
+            articleTitle: '',
+            keyword: '',
+            des: '',
+            type: '',
+            value: '',
+        };
+        this.setState({visible: false, infos: obj});
+    }
+    changePage = (page, pageSize) => {
+        this.setState(state => state.page.currentPage = page);
     }
     handleOk = () => {
         if (this.state.currentTitle === '编辑文章') {
@@ -194,6 +210,15 @@ export default class List extends Component {
                 <Table
                     rowKey = {(record) => record.createTime}
                     columns={this.state.columns}
+                    pagination={
+                        {
+                        size: 'small',
+                        total: this.state.page.total, 
+                        defaultCurrent: this.state.page.currentPage,
+                        showQuickJumper: true,
+                        onChange: this.state.changePage
+                        }
+                    }
                     dataSource={this.state.listData}
                 />
                 <Modal
